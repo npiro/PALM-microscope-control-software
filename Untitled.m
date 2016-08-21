@@ -1,0 +1,1 @@
+todaysDate = datestr(now,'yyyy-mm-dd');

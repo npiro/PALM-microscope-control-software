@@ -1,0 +1,99 @@
+function zpf = zernike_fcn3(zernv, X, Y, valid, order)
+% Generate a set of Zernike polynomial functions on the unit circle.
+%function zpf = zernike_fcn3(zernv, X, Y, valid, order)
+%
+% Description: Represent a wavefront as a sum of Zernike polynomials using
+%              a matrix inversion.
+% 
+% Input:    zernv Vector of Zernike polynomial numbers to use
+%           X,Y = 2D coordinate arrays, as created by meshgrid(x1D,y1D),
+%                 normalized to the unit circle.
+%           valid = 2D array of 0 and 1 identifying the valid points for
+%                 computation of the Zernike polynominal. Normally, this is the
+%                 set of points with radii <= 1.0.
+%                 X, Y, and Valid must be the same size
+%           order (optional) identifies the ordering scheme (per zernfun2A.m)
+%                 'noll'    = Bob Noll's original ordering
+%                 'fringe'  = Univ. of Arizona Zernike set
+%                 'original'= original order of zernfun.m
+%                 'default' = The is the default ordering
+%                           = the 'fringe' (UofA) set + more terms
+%                 All of these orders are numbered starting from 1, to simplify this code
+% Output:   zpf = set of Zernike polynomial functions
+%                 Each column of zpf is one Zernike polynomial function
+% 
+% Note: zernfun.m is required for use with this file. 
+%       It is available here: 
+%         http://www.mathworks.com/matlabcentral/fileexchange/7687 
+%
+% 2010 Aug 18  Carey Smith
+%   Created from zernike_coeffs3.m & consistent with it
+% 2010 Aug 30  Carey Smith
+%   Specify X, Y & valid, so that this is consistent witht eh calling program.
+%
+
+% Checks
+if(nargin < 5)
+    order = 'default';
+else
+  if(isempty(order))
+    order = 'default';
+  end
+end
+
+if(min(zernv) <= 0)
+  error('zernike_coeffs3:InvalidZmin',['The minimum Zernike specified = ',int2str(min(zernv)),' <= 0']);
+end
+M = max(zernv);
+if(strcmpi(order,'noll'))
+  if M > 105
+    error(['The maximum number of coefficients allowed for ',order,' is 105, but max. specified=',int2str(M)]);
+  end
+  % M= 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37
+  n = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,10,10,10,10,10,10,10,10,10, 10, 10,11,11,11,11,11,11,11,11,11,11, 11, 11,12,12,12,12,12,12,12,12,12, 12,12, 12,12,13,13,13,13,13,13,13,13,13,13, 13, 13, 13, 13];
+  m = [0, 1,-1, 0, 2,-2,-1, 1,-3, 3, 0,-2, 2,-4, 4, 1,-1, 3,-3, 5,-5, 0, 2,-2, 4,-4, 6,-6,-1, 1,-3, 3,-5, 5,-7, 7, 0,-2, 2,-4, 4,-6, 6,-8, 8, 1,-1, 3,-3, 5,-5, 7,-7, 9,-9, 0, 2,-2, 4,-4, 6,-6, 8,-8, 10,-10,-1, 1,-3, 3,-5, 5,-7, 7,-9, 9,-11, 11, 0,-2, 2,-4, 4,-6, 6,-8, 8,-10,10,-12,12, 1,-1,-3, 3, 5,-5, 7,-7, 9,-9, 11,-11, 13,-13];
+elseif(strcmpi(order,'fringe'))
+  if M > 37
+    error(['The maximum number of coefficients allowed for ',order,' is 37, but max. specified=',int2str(M)]);
+  end
+  %p0= 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+  % M= 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37
+  n = [0  1  1  2  2  2  3  3  4  3  3  4  4  5  5  6  4  4  5  5  6  6  7  7  8  5  5  6  6  7  7  8  8  9  9 10 12]';
+  m = [0  1 -1  0 -2  2  1 -1  0  3 -3 -2  2  1 -1  0 -4  4  3 -3 -2  2  1 -1  0  5 -5 -4  4  3 -3 -2  2  1 -1  0  0]';
+elseif(strcmpi(order,'original'))
+  if M > 105
+    error(['The maximum number of coefficients allowed for ',order,' is 105, but max. specified=',int2str(M)]);
+  end
+  % M= 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37
+  n = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8,8,8,8,8,8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10,10,10,10,10,10,10,10,10,10,10, 11,11,11,11,11,11,11,11,11,11,11, 11, 12, 12,12,12,12,12,12,12,12,12,12,12,12, 13, 13,13,13,13,13,13,13,13,13,13,13, 13, 13];
+  m = [0, 1,-1,-2, 0, 2, 3, 1,-1,-3,-4,-2, 0, 2, 4, 5, 3, 1,-1,-3,-5,-6,-4,-2, 0, 2, 4, 6, 7, 5, 3, 1,-1,-3,-5,-7,-8,-6,-4,-2,0,2,4,6,8, 9, 7, 5, 3, 1,-1,-3,-5,-7,-9,-10,-8,-6,-4,-2, 0, 2, 4, 6, 8,10, 11, 9, 7, 5, 3, 1,-1,-3,-5,-7,-9,-11,-12,-10,-8,-6,-4,-2, 0, 2, 4, 6, 8,10,12, 13, 11, 9, 7, 5, 3, 1,-1,-3,-5,-7,-9,-11,-13];
+elseif(strcmpi(order,'default'))
+  if M > 105
+    error(['The maximum number of coefficients allowed for ',order,' is 105, but max. specified=',int2str(M)]);
+  end
+  % Appears to be the fringe Zernike set, plus more
+  % M= 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37
+  n = [0  1  1  2  2  2  3  3  3  3  4  4  4  4  4  5  5  5  5  5  5  6  6  6  6  6  6  6  7  7  7  7  7  7  7  7  8  8 8  8 8  8 8  8 8  9 9  9 9  9 9  9 9  9 9 10 10 10 10 10 10 10 10 10  10  10 11 11 11 11 11 11 11 11 11 11  11  11 12 12 12 12 12 12 12 12 12  12 12  12 12 13 13 13 13 13 13 13 13 13 13  13 13  13 13];
+  m = [0  1 -1  0 -2  2  1 -1  3 -3  0 -2  2 -4  4  1 -1 -3  3 -5  5  0 -2  2 -4  4 -6  6 -1  1 -3  3 -5  5 -7  7  0 -2 2 -4 4 -6 6 -8 8 -1 1 -3 3 -5 5 -7 7 -9 9  0 -2  2 -4  4 -6  6 -8  8 -10  10 -1  1 -3  3 -5  5 -7  7 -9  9 -11  11  0 -2  2 -4  4 -6  6 -8  8 -10 10 -12 12 -1  1 -3  3 -5  5 -7  7 -9  9 -11 11 -13 13];
+else
+    error('zernike_coeffs3:order',['Unknown order = ',order]);
+end
+%disp(['zernike_fcn3.m: order = ',order,'; M=',int2str(M)])
+
+[theta,r] = cart2pol(X,Y);         % Convert from rectangular to polar coordinates
+idxr = find((r>1.0000) & (r<1.0001));  % Allow for a small round-off error
+if(any(idxr))
+  disp([mfilename,': 1.0000 < r < 1.0001 for ',int2str(length(idxr(:))),' points'])
+  disp(['  These points were set to 1.000 to avoid a potential error in zernfun.m'])
+  r(idxr) = 1.000;
+end
+
+if exist('zernfun.m','file') > 0
+%   disp(['zernike_coeffs3.m']);
+%   zernv = zernv
+%   n1_M = n(zernv)
+%   m1_M = m(zernv)
+    zpf = zernfun(n(zernv),m(zernv),r(valid),theta(valid),'norm');  % Compute the requested Zernikes (1D)
+else
+    error('zernfun.m does not exist in your path! Please download from www.mathworks.com/matlabcentral/fileexchange/ and place in a folder in your MATLAB path.');
+end

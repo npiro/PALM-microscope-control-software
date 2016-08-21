@@ -1,0 +1,5 @@
+function aberratedWF = depthAberration(aberrations)
+% Simulates an aberrated initial wavefront
+
+
+end
